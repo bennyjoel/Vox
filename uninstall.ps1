@@ -15,9 +15,15 @@ if (Test-Path $installDir) {
     Write-Host "Removing installation directory: $installDir"
     Remove-Item -Path $installDir -Recurse -Force -ErrorAction SilentlyContinue
 }
+$zipPath = "$HOME\VoxType.zip"
+if (Test-Path $zipPath) {
+    Write-Host "Removing downloaded ZIP: $zipPath"
+    Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
+}
 
 # 3. Remove Desktop Shortcut
-$shortcutPath = "$HOME\Desktop\VoxType.lnk"
+$desktopPath = [Environment]::GetFolderPath("Desktop")
+$shortcutPath = "$desktopPath\VoxType.lnk"
 if (Test-Path $shortcutPath) {
     Write-Host "Removing desktop shortcut..."
     Remove-Item -Path $shortcutPath -Force -ErrorAction SilentlyContinue

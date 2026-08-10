@@ -7,11 +7,21 @@ Write-Host ""
 
 # Check for Python
 Write-Host "[1/4] Checking prerequisites..."
-if (-not (Get-Command "python" -ErrorAction SilentlyContinue)) {
-    Write-Host "Error: Python is not installed or not in your PATH." -ForegroundColor Red
-    Write-Host "Please install Python 3.10+ from https://www.python.org/downloads/ and try again." -ForegroundColor Yellow
-    exit 1
-}
+    $pythonExe = Get-Command "python" -ErrorAction SilentlyContinue
+    if (-not $pythonExe) {
+        Write-Host "Error: Python is not installed." -ForegroundColor Red
+        Write-Host "Please install Python 3.10+ from https://www.python.org/downloads/ and try again." -ForegroundColor Yellow
+        exit 1
+    }
+    
+    # Check for the Microsoft Store alias trap
+    $pythonVersion = & python --version 2>&1
+    if ($LASTEXITCODE -ne 0 -or "$pythonVersion" -match "was not found") {
+        Write-Host "Error: Python is not properly installed or is blocked by a Microsoft Store App Execution Alias." -ForegroundColor Red
+        Write-Host "To fix this:`n1. Open Windows Settings > Apps > Advanced app settings > App execution aliases`n2. Turn OFF 'App Installer' for python.exe and python3.exe`n3. Try running this installer again." -ForegroundColor Yellow
+        Write-Host "Alternatively, download Python directly from https://www.python.org/downloads/" -ForegroundColor Yellow
+        exit 1
+    }
 
 $installDir = "$HOME\VoxType"
 Write-Host "[2/4] Downloading VoxType to $installDir..."
@@ -49,7 +59,8 @@ Write-Host "Installing dependencies (this might take a minute)..."
 
 Write-Host "[4/4] Creating Desktop Shortcut..."
 $WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut("$HOME\Desktop\VoxType.lnk")
+$desktopPath = [Environment]::GetFolderPath("Desktop")
+$Shortcut = $WshShell.CreateShortcut("$desktopPath\VoxType.lnk")
 $Shortcut.TargetPath = "$installDir\venv\Scripts\pythonw.exe"
 $Shortcut.Arguments = "main.py"
 $Shortcut.WorkingDirectory = $installDir
