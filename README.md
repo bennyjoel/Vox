@@ -46,11 +46,15 @@ VoxType is a powerful, privacy-focused dictation tool built exclusively for Wind
 *Placeholder: System Tray Menu*
 *Placeholder: Settings Window*
 
-## 🚀 Quick Start
-1. Download the latest release from the [Releases page](https://github.com/yourusername/VoxType/releases).
-2. Extract the ZIP and run `VoxType.exe`.
-3. Follow the initial setup wizard to configure your microphone and optional Gemini API key.
-4. Press the hotkey (default: `Ctrl + Space`) to start dictating!
+## 🚀 Quick Start (One-Click Install)
+The easiest way to install VoxType on Windows is using our one-line PowerShell installer. It will automatically download the app, set up the virtual environment, install dependencies, and create a desktop shortcut.
+
+Open **PowerShell** and run:
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/bennyjoel/Vox/main/install.ps1" -OutFile "install.ps1"; .\install.ps1
+```
+
+*Alternatively, you can download the latest release from the [Releases page](https://github.com/bennyjoel/Vox/releases) and extract it manually.*
 
 ## 🛠️ Build from Source
 To build VoxType yourself, you need Python 3.11+.
