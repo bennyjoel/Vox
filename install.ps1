@@ -62,15 +62,29 @@ if (Test-Path "$installDir\.git") {
     git pull
 } else {
     if (Get-Command "git" -ErrorAction SilentlyContinue) {
+        Write-Host "Cloning repository using git..."
         git clone https://github.com/bennyjoel/Vox.git $installDir
-    } else {
-        # Fallback to downloading zip if git is not installed
+    } 
+    
+    # Check if git clone succeeded, otherwise fallback to zip
+    if (-not (Test-Path $installDir)) {
+        Write-Host "Downloading via zip archive..."
         $zipPath = "$HOME\VoxType.zip"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         Invoke-WebRequest -Uri "https://github.com/bennyjoel/Vox/archive/refs/heads/main.zip" -OutFile $zipPath
         Expand-Archive -Path $zipPath -DestinationPath $HOME -Force
-        Rename-Item -Path "$HOME\Vox-main" -NewName "VoxType"
-        Remove-Item -Path $zipPath
+        
+        # Ensure we don't conflict with a zombie directory
+        if (Test-Path "$installDir") { Remove-Item -Path "$installDir" -Recurse -Force -ErrorAction SilentlyContinue }
+        
+        Rename-Item -Path "$HOME\Vox-main" -NewName "VoxType" -Force
+        Remove-Item -Path $zipPath -Force
     }
+}
+
+if (-not (Test-Path $installDir)) {
+    Write-Host "Error: Could not create or download VoxType to $installDir" -ForegroundColor Red
+    exit 1
 }
 
 Set-Location $installDir
