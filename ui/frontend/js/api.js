@@ -20,6 +20,7 @@ const api = {
     },
 
     async getState() { return await this.call('get_state'); },
+    async toggleRecording() { return await this.call('toggle_recording'); },
     async startRecording() { return await this.call('start_recording'); },
     async stopRecording() { return await this.call('stop_recording'); },
     async getSettings() { return await this.call('get_settings'); },
