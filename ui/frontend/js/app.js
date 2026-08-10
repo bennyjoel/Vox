@@ -39,7 +39,11 @@ window.app.renderers.dashboard = async (container) => {
                 <canvas id="waveform"></canvas>
             </div>
             
-            <div class="flex gap-4 mt-4">
+            <button id="dictate-btn" class="massive-dictate-btn" onclick="api.toggleRecording()">
+                🎙️ Dictate
+            </button>
+            
+            <div class="flex gap-4 mt-8">
                 <button class="glass-button" onclick="router.navigateTo('settings')">Settings</button>
                 <button class="glass-button" onclick="router.navigateTo('history')">History</button>
                 <button class="glass-button" onclick="router.navigateTo('stats')">Stats</button>

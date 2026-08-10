@@ -48,6 +48,7 @@ class VoxTypeApp:
         self.context_detector = ContextDetector()
         self.snippet_engine = SnippetEngine(self.db)
         self.hotkey_manager = HotkeyManager(on_press=self.toggle_recording, mode='toggle')
+        self.api = None
         
     def start(self):
         # Async load of whisper model
@@ -81,11 +82,15 @@ class VoxTypeApp:
     def start_recording(self):
         logger.info("Started recording...")
         self.is_recording = True
+        if self.api:
+            self.api.set_status("recording")
         self.audio.start()
 
     def stop_recording(self):
         logger.info("Stopped recording. Processing...")
         self.is_recording = False
+        if self.api:
+            self.api.set_status("processing")
         self.audio.stop()
         
         audio_data = self.audio.get_audio()
@@ -145,19 +150,50 @@ class VoxTypeApp:
         
         # Inject
         self.injector.inject(final_text, method='clipboard')
+        if self.api:
+            self.api.set_status("idle")
 
     def shutdown(self):
         logger.info("Shutting down...")
         self.hotkey_manager.stop()
 
 if __name__ == '__main__':
+    import webview
+    from ui.backend import VoxTypeAPI
+    import os
+    
     app = VoxTypeApp()
     app.start()
     
-    # Keep main thread alive
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
+    api = VoxTypeAPI(app=app)
+    app.api = api
+    
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    html_path = os.path.join(base_dir, 'ui', 'frontend', 'index.html')
+    icon_path = os.path.join(base_dir, 'assets', 'icon.ico')
+    
+    window = webview.create_window(
+        'VoxType', 
+        url=html_path, 
+        js_api=api,
+        width=800, 
+        height=600, 
+        frameless=True,
+        easy_drag=True,
+        transparent=True,
+        background_color='#000000'
+    )
+    
+    def on_closed():
         app.shutdown()
+        import sys
         sys.exit(0)
+        
+    window.events.closed += on_closed
+    
+    logger.info("Starting pywebview UI...")
+    try:
+        webview.start(debug=False, gui='edgechromium', icon=icon_path)
+    except Exception as e:
+        logger.error(f"Failed to start UI: {e}")
+        app.shutdown()

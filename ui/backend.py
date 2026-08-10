@@ -15,18 +15,13 @@ class VoxTypeAPI:
     def get_state(self) -> dict:
         return self._state
 
-    def start_recording(self):
-        self._state["status"] = "recording"
+    def toggle_recording(self):
         if self.app:
-            pass # trigger core recording
+            self.app.toggle_recording()
         return True
 
-    def stop_recording(self):
-        self._state["status"] = "processing"
-        if self.app:
-            pass # trigger core processing
-        # mock transition to idle after a bit
-        return True
+    def set_status(self, status: str):
+        self._state["status"] = status
 
     def get_settings(self) -> dict:
         return {

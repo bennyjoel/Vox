@@ -11,8 +11,16 @@ function Get-RealPython {
     # 1. Check if standard python command works (and isn't the store alias)
     $pythonExe = Get-Command "python" -ErrorAction SilentlyContinue
     if ($pythonExe) {
-        $version = & python --version 2>&1
-        if ($LASTEXITCODE -eq 0 -and "$version" -notmatch "was not found") { return "python" }
+        $oldEA = $ErrorActionPreference
+        $ErrorActionPreference = "SilentlyContinue"
+        try {
+            $version = cmd.exe /c "python --version 2>&1"
+            if ($LASTEXITCODE -eq 0 -and "$version" -notmatch "was not found") { 
+                $ErrorActionPreference = $oldEA
+                return "python" 
+            }
+        } catch {}
+        $ErrorActionPreference = $oldEA
     }
     # 2. Check for Python Launcher for Windows
     if (Get-Command "py" -ErrorAction SilentlyContinue) { return "py" }
@@ -84,7 +92,7 @@ $Shortcut = $WshShell.CreateShortcut("$desktopPath\VoxType.lnk")
 $Shortcut.TargetPath = "$installDir\venv\Scripts\pythonw.exe"
 $Shortcut.Arguments = "main.py"
 $Shortcut.WorkingDirectory = $installDir
-# $Shortcut.IconLocation = "$installDir\assets\icon_idle.png" # Optional icon
+$Shortcut.IconLocation = "$installDir\assets\icon.ico"
 $Shortcut.Save()
 
 Write-Host ""
