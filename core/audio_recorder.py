@@ -85,8 +85,11 @@ class AudioRecorder:
     def get_audio(self) -> np.ndarray:
         """Retrieves all recorded audio as a single numpy array."""
         chunks = []
-        while not self.audio_queue.empty():
-            chunks.append(self.audio_queue.get())
+        while True:
+            try:
+                chunks.append(self.audio_queue.get_nowait())
+            except queue.Empty:
+                break
             
         if not chunks:
             return np.zeros((0, 1), dtype=np.float32)

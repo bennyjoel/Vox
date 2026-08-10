@@ -22,13 +22,15 @@ class HotkeyManager:
 
     def _handle_hotkey(self):
         if self.mode == 'toggle':
-            self.is_active = not self.is_active
-            if self.is_active:
+            if self.on_release:
+                self.is_active = not self.is_active
+                if self.is_active:
+                    self.on_press()
+                else:
+                    self.on_release()
+            else:
                 if self.on_press:
                     self.on_press()
-            else:
-                if self.on_release:
-                    self.on_release()
         elif self.mode == 'push_to_talk':
             if self.on_press:
                 self.on_press()

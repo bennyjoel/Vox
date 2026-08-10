@@ -112,59 +112,61 @@ class VoxTypeApp:
         threading.Thread(target=self.process_audio, args=(audio_data,), daemon=True).start()
 
     def process_audio(self, audio_data):
-        if len(audio_data) == 0:
-            logger.warning("No audio recorded.")
-            return
-
-        segments = self.vad.process_audio(audio_data)
-        if not segments:
-            logger.warning("No speech detected.")
-            return
-            
-        # Combine segments for transcription (could be done per segment)
-        import numpy as np
-        combined_audio = np.concatenate(segments)
-        
-        # Speaker Verify (optional)
-        if self.speaker_verifier.is_enrolled():
-            is_owner, score = self.speaker_verifier.verify(combined_audio)
-            if not is_owner:
-                logger.warning(f"Speaker not verified (score: {score:.2f}). Dropping transcription.")
+        try:
+            if len(audio_data) == 0:
+                logger.warning("No audio recorded.")
                 return
-            logger.info(f"Speaker verified (score: {score:.2f}).")
+
+            segments = self.vad.process_audio(audio_data)
+            if not segments:
+                logger.warning("No speech detected.")
+                return
             
-        # Transcribe
-        result = self.transcriber.transcribe(combined_audio)
-        if not result.text:
-            return
+            # Combine segments for transcription (could be done per segment)
+            import numpy as np
+            combined_audio = np.concatenate(segments)
             
-        logger.info(f"Raw Text: {result.text}")
-        
-        # Gibberish check
-        is_gibberish, reason = GibberishFilter.is_gibberish(result.text, result.avg_logprob, result.compression_ratio)
-        if is_gibberish:
-            logger.warning(f"Detected gibberish ({reason}), discarding.")
-            return
+            # Speaker Verify (optional)
+            if self.speaker_verifier.is_enrolled():
+                is_owner, score = self.speaker_verifier.verify(combined_audio)
+                if not is_owner:
+                    logger.warning(f"Speaker not verified (score: {score:.2f}). Dropping transcription.")
+                    return
+                logger.info(f"Speaker verified (score: {score:.2f}).")
+                
+            # Transcribe
+            result = self.transcriber.transcribe(combined_audio)
+            if not result.text:
+                return
+                
+            logger.info(f"Raw Text: {result.text}")
             
-        # Context Detection
-        context = self.context_detector.get_active_context()
-        logger.info(f"Context: {context['context_category']} ({context['app_name']})")
-        
-        # Snippets
-        expanded_text = self.snippet_engine.check_and_expand(result.text)
-        
-        # Format
-        if self.gemini.is_configured():
-            final_text = self.gemini.format_text(expanded_text, context=context['context_category'])
-        else:
-            final_text = self.offline_formatter.format_text(expanded_text)
+            # Gibberish check
+            is_gibberish, reason = GibberishFilter.is_gibberish(result.text, result.avg_logprob, result.compression_ratio)
+            if is_gibberish:
+                logger.warning(f"Detected gibberish ({reason}), discarding.")
+                return
+                
+            # Context Detection
+            context = self.context_detector.get_active_context()
+            logger.info(f"Context: {context['context_category']} ({context['app_name']})")
             
-        logger.info(f"Final Text: {final_text}")
-        
-        # Inject
-        self.injector.inject(final_text, method='clipboard')
-        if self.api:
-            self.api.set_status("idle")
+            # Snippets
+            expanded_text = self.snippet_engine.check_and_expand(result.text)
+            
+            # Format
+            if self.gemini.is_configured():
+                final_text = self.gemini.format_text(expanded_text, context=context['context_category'])
+            else:
+                final_text = self.offline_formatter.format_text(expanded_text)
+                
+            logger.info(f"Final Text: {final_text}")
+            
+            # Inject
+            self.injector.inject(final_text, method='clipboard')
+        finally:
+            if self.api:
+                self.api.set_status("idle")
 
     def shutdown(self):
         logger.info("Shutting down...")
