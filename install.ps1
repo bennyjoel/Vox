@@ -7,21 +7,42 @@ Write-Host ""
 
 # Check for Python
 Write-Host "[1/4] Checking prerequisites..."
+function Get-RealPython {
+    # 1. Check if standard python command works (and isn't the store alias)
     $pythonExe = Get-Command "python" -ErrorAction SilentlyContinue
-    if (-not $pythonExe) {
-        Write-Host "Error: Python is not installed." -ForegroundColor Red
-        Write-Host "Please install Python 3.10+ from https://www.python.org/downloads/ and try again." -ForegroundColor Yellow
-        exit 1
+    if ($pythonExe) {
+        $version = & python --version 2>&1
+        if ($LASTEXITCODE -eq 0 -and "$version" -notmatch "was not found") { return "python" }
+    }
+    # 2. Check for Python Launcher for Windows
+    if (Get-Command "py" -ErrorAction SilentlyContinue) { return "py" }
+    # 3. Check common installation paths
+    $paths = @("$env:LOCALAPPDATA\Programs\Python\Python*\python.exe", "$env:ProgramFiles\Python*\python.exe", "C:\Python*\python.exe")
+    foreach ($p in $paths) {
+        $found = Resolve-Path $p -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Path -First 1
+        if ($found) { return $found }
+    }
+    return $null
+}
+
+$pythonCmd = Get-RealPython
+
+if (-not $pythonCmd) {
+    Write-Host "Python not found. Attempting to install Python 3.11 automatically..." -ForegroundColor Yellow
+    if (Get-Command "winget" -ErrorAction SilentlyContinue) {
+        winget install --id Python.Python.3.11 --exact --silent --accept-package-agreements --accept-source-agreements
+        # Refresh env path
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        $pythonCmd = Get-RealPython
     }
     
-    # Check for the Microsoft Store alias trap
-    $pythonVersion = & python --version 2>&1
-    if ($LASTEXITCODE -ne 0 -or "$pythonVersion" -match "was not found") {
-        Write-Host "Error: Python is not properly installed or is blocked by a Microsoft Store App Execution Alias." -ForegroundColor Red
-        Write-Host "To fix this:`n1. Open Windows Settings > Apps > Advanced app settings > App execution aliases`n2. Turn OFF 'App Installer' for python.exe and python3.exe`n3. Try running this installer again." -ForegroundColor Yellow
-        Write-Host "Alternatively, download Python directly from https://www.python.org/downloads/" -ForegroundColor Yellow
+    if (-not $pythonCmd) {
+        Write-Host "Automatic installation failed." -ForegroundColor Red
+        Write-Host "Please install Python 3.10+ manually from https://www.python.org/downloads/" -ForegroundColor Yellow
         exit 1
     }
+}
+Write-Host "Using Python at: $pythonCmd"
 
 $installDir = "$HOME\VoxType"
 Write-Host "[2/4] Downloading VoxType to $installDir..."
@@ -47,9 +68,8 @@ if (Test-Path "$installDir\.git") {
 Set-Location $installDir
 
 Write-Host "[3/4] Setting up Python virtual environment..."
-# Create virtual environment if it doesn't exist
 if (-not (Test-Path "venv")) {
-    python -m venv venv
+    & $pythonCmd -m venv venv
 }
 
 Write-Host "Installing dependencies (this might take a minute)..."
