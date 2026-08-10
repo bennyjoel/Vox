@@ -55,13 +55,6 @@ class AudioRecorder:
             
         self.is_recording = True
         try:
-            # Attempt to use WASAPI on Windows if available
-            hostapi = None
-            for api in sd.query_hostapis():
-                if api['name'] == 'Windows WASAPI':
-                    hostapi = api['index']
-                    break
-                    
             kwargs = {
                 'samplerate': SAMPLE_RATE,
                 'channels': CHANNELS,
@@ -69,8 +62,6 @@ class AudioRecorder:
                 'blocksize': BLOCKSIZE,
                 'callback': self._audio_callback
             }
-            if hostapi is not None:
-                kwargs['extra_settings'] = sd.WasapiSettings(exclusive=False)
                 
             self.stream = sd.InputStream(**kwargs)
             self.stream.start()
