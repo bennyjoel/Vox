@@ -46,12 +46,20 @@ VoxType is a powerful, privacy-focused dictation tool built exclusively for Wind
 *Placeholder: System Tray Menu*
 *Placeholder: Settings Window*
 
-## 🚀 Quick Start (One-Click Install)
+## 🚀 One-Click Install & Uninstall
+
+### Install VoxType
 The easiest way to install VoxType on Windows is using our one-line PowerShell installer. It will automatically download the app, set up the virtual environment, install dependencies, and create a desktop shortcut.
 
 Open **PowerShell** and run:
 ```powershell
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/bennyjoel/Vox/main/install.ps1" -OutFile "install.ps1"; .\install.ps1
+irm https://raw.githubusercontent.com/bennyjoel/Vox/main/install.ps1 | iex
+```
+
+### Uninstall VoxType
+To completely remove VoxType, including its desktop shortcut and downloaded models, open **PowerShell** and run:
+```powershell
+irm https://raw.githubusercontent.com/bennyjoel/Vox/main/uninstall.ps1 | iex
 ```
 
 *Alternatively, you can download the latest release from the [Releases page](https://github.com/bennyjoel/Vox/releases) and extract it manually.*
