@@ -4,8 +4,15 @@ import threading
 import logging
 import time
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Configure logging to file to prevent pythonw.exe silent crashes
+log_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'VoxType')
+os.makedirs(log_dir, exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    filename=os.path.join(log_dir, 'voxtype.log'),
+    filemode='a'
+)
 logger = logging.getLogger("VoxType")
 
 # Import Core Modules
@@ -194,7 +201,7 @@ if __name__ == '__main__':
     
     logger.info("Starting pywebview UI...")
     try:
-        webview.start(debug=False, gui='edgechromium', icon=icon_path)
+        webview.start(debug=False, icon=icon_path)
     except Exception as e:
         logger.error(f"Failed to start UI: {e}")
         app.shutdown()
