@@ -5,6 +5,12 @@ Write-Host "       Installing VoxType v2.0...        " -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host ""
 
+$installDir = "$HOME\VoxType"
+$repoUrl = "https://github.com/bennyjoel/Vox.git"
+
+Write-Host "Killing any old instances of VoxType..." -ForegroundColor Yellow
+Get-WmiObject Win32_Process | Where-Object { $_.CommandLine -match "VoxType\\venv\\Scripts\\pythonw\.exe" } | ForEach-Object { $_.Terminate() }
+
 # Check for Python
 Write-Host "[1/4] Checking prerequisites..."
 function Get-RealPython {
