@@ -176,11 +176,12 @@ if __name__ == '__main__':
         'VoxType', 
         url=html_path, 
         js_api=api,
-        width=800, 
-        height=600, 
+        width=360, 
+        height=100, 
         frameless=True,
         easy_drag=True,
         transparent=True,
+        on_top=True,
         background_color='#000000'
     )
     

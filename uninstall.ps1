@@ -1,42 +1,50 @@
-$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "SilentlyContinue"
 
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "       Uninstalling VoxType...           " -ForegroundColor Cyan
+Write-Host "       Uninstalling VoxType v2.1...      " -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host ""
 
-# 1. Check if VoxType is running and kill it
-Write-Host "Checking for running VoxType processes..."
-Get-Process -Name "pythonw" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match "VoxType" -or $_.Path -match "VoxType" } | Stop-Process -Force -ErrorAction SilentlyContinue
-
-# 2. Remove Installation Directory
 $installDir = "$HOME\VoxType"
-if (Test-Path $installDir) {
-    Write-Host "Removing installation directory: $installDir"
-    Remove-Item -Path $installDir -Recurse -Force -ErrorAction SilentlyContinue
-}
-$zipPath = "$HOME\VoxType.zip"
-if (Test-Path $zipPath) {
-    Write-Host "Removing downloaded ZIP: $zipPath"
-    Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
-}
-
-# 3. Remove Desktop Shortcut
-$desktopPath = [Environment]::GetFolderPath("Desktop")
-$shortcutPath = "$desktopPath\VoxType.lnk"
-if (Test-Path $shortcutPath) {
-    Write-Host "Removing desktop shortcut..."
-    Remove-Item -Path $shortcutPath -Force -ErrorAction SilentlyContinue
-}
-
-# 4. Remove AppData (Settings, History, Downloaded Models)
 $appDataDir = "$env:LOCALAPPDATA\VoxType"
+
+Write-Host "[1/4] Stopping background processes..." -ForegroundColor Yellow
+# Find and kill python/pythonw processes running from the installation directory
+$processes = Get-WmiObject Win32_Process | Where-Object { $_.Name -match "^pythonw?\.exe$" -and $_.ExecutablePath -like "$installDir\*" }
+foreach ($p in $processes) {
+    Stop-Process -Id $p.ProcessId -Force
+}
+Start-Sleep -Seconds 2
+
+Write-Host "[2/4] Removing shortcuts..." -ForegroundColor Yellow
+$userDesktop = [Environment]::GetFolderPath("Desktop")
+$publicDesktop = [Environment]::GetFolderPath("CommonDesktopDirectory")
+
+$shortcuts = @(
+    "$userDesktop\VoxType.lnk",
+    "$publicDesktop\VoxType.lnk"
+)
+
+foreach ($sc in $shortcuts) {
+    if (Test-Path $sc) {
+        Remove-Item -Path $sc -Force
+    }
+}
+
+Write-Host "[3/4] Deleting application files..." -ForegroundColor Yellow
+if (Test-Path $installDir) {
+    Remove-Item -Path $installDir -Recurse -Force
+}
+
+if (Test-Path "$HOME\VoxType.zip") {
+    Remove-Item -Path "$HOME\VoxType.zip" -Force
+}
+
+Write-Host "[4/4] Deleting models and app data..." -ForegroundColor Yellow
 if (Test-Path $appDataDir) {
-    Write-Host "Removing application data and models: $appDataDir"
-    Remove-Item -Path $appDataDir -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -Path $appDataDir -Recurse -Force
 }
 
 Write-Host ""
-Write-Host "=========================================" -ForegroundColor Green
-Write-Host "   VoxType has been successfully uninstalled!" -ForegroundColor Green
-Write-Host "=========================================" -ForegroundColor Green
+Write-Host "VoxType has been completely uninstalled. Zero traces remain." -ForegroundColor Green
+Write-Host "=========================================" -ForegroundColor Cyan
+Start-Sleep -Seconds 3
