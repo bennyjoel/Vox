@@ -18,10 +18,12 @@ Start-Sleep -Seconds 2
 Write-Host "[2/4] Removing shortcuts..." -ForegroundColor Yellow
 $userDesktop = [Environment]::GetFolderPath("Desktop")
 $publicDesktop = [Environment]::GetFolderPath("CommonDesktopDirectory")
+$onedriveDesktop = "$HOME\OneDrive\Desktop"
 
 $shortcuts = @(
     "$userDesktop\VoxType.lnk",
-    "$publicDesktop\VoxType.lnk"
+    "$publicDesktop\VoxType.lnk",
+    "$onedriveDesktop\VoxType.lnk"
 )
 
 foreach ($sc in $shortcuts) {

@@ -10,7 +10,7 @@ VOICEPRINT_PATH = os.path.join(APP_DATA_DIR, 'voiceprint.npy')
 os.makedirs(APP_DATA_DIR, exist_ok=True)
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-DEFAULT_HOTKEY = {'modifiers': ['shift', 'alt'], 'key': 'space'}
+DEFAULT_HOTKEY = {'modifiers': ['shift'], 'key': 'space'}
 SAMPLE_RATE = 16000
 CHANNELS = 1
 BLOCKSIZE = 512

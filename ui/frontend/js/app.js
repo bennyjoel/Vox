@@ -48,7 +48,7 @@ window.app = {
             waveContainer.style.display = 'none';
         } else {
             // Idle
-            statusText.textContent = 'Press ⇧ + ⌥ + Space to Dictate';
+            statusText.textContent = 'Press ⇧ + Space to Dictate';
             waveContainer.style.display = 'none';
         }
     }

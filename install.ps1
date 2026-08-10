@@ -101,7 +101,14 @@ Write-Host "Installing dependencies (this might take a minute)..."
 
 Write-Host "[4/4] Creating Desktop Shortcut..."
 $WshShell = New-Object -comObject WScript.Shell
-$desktopPath = [Environment]::GetFolderPath("Desktop")
+
+$onedriveDesktop = "$HOME\OneDrive\Desktop"
+if (Test-Path $onedriveDesktop) {
+    $desktopPath = $onedriveDesktop
+} else {
+    $desktopPath = [Environment]::GetFolderPath("Desktop")
+}
+
 $Shortcut = $WshShell.CreateShortcut("$desktopPath\VoxType.lnk")
 $Shortcut.TargetPath = "$installDir\venv\Scripts\pythonw.exe"
 $Shortcut.Arguments = "main.py"
