@@ -81,6 +81,12 @@ class VoxTypeApp:
             logger.warning("Components not ready yet. Please wait.")
             return
             
+        import time
+        current_time = time.time()
+        if hasattr(self, 'last_toggle_time') and current_time - self.last_toggle_time < 0.3:
+            return
+        self.last_toggle_time = current_time
+
         if self.is_recording:
             self.stop_recording()
         else:

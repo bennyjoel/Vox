@@ -36,7 +36,7 @@ class HotkeyManager:
     def start(self):
         """Starts the hotkey listener."""
         try:
-            keyboard.add_hotkey(self.hotkey_str, self._handle_hotkey, suppress=True)
+            keyboard.add_hotkey(self.hotkey_str, self._handle_hotkey, suppress=True, trigger_on_release=True)
             logger.info(f"Hotkey '{self.hotkey_str}' registered successfully.")
         except Exception as e:
             logger.error(f"Failed to register hotkey: {e}")
